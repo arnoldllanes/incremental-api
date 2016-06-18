@@ -8,6 +8,7 @@ use App\Http\Requests;
 use Response;
 use App\Acme\Transformers\LessonTransformer;
 
+
 class LessonsController extends ApiController
 {
     /**
@@ -20,6 +21,8 @@ class LessonsController extends ApiController
     function __construct(LessonTransformer $lessonTransformer)
     {
         $this->lessonTransformer = $lessonTransformer;
+
+        $this->middleware('auth.basic', ['only' => 'store']);
     }
 	
     /**
@@ -34,9 +37,9 @@ class LessonsController extends ApiController
     	// 3.) Linking db structure to the API output
     	// 4.) No way to signal headers/repsonse codes
     	$lessons = Lesson::all();
-    	return Response::json([
-    		'data' => $this->lessonTransformer->transformCollection($lessons->all())
-    	], 200);
+    	return $this->respond([
+            'data' => $this->lessonTransformer->transformCollection($lessons->all())
+        ]);
     }
 
     /**
@@ -54,9 +57,23 @@ class LessonsController extends ApiController
             return $this->respondNotFound('Lesson does not exist.');
     	}
 
-    	return Response::json([
+    	return $this->respond([
             'data' => $this->lessonTransformer->transform($lesson)
-    	], 200);
+    	]);
     }
+
+    public function store(Request $request)
+    {
+        if (! $request->input('title') or ! $request->input('body') ) 
+        {
+            return $this->setStatusCode(422)->respondWithError('Parameters failed validation for a lesson.');
+        }
+
+        Lesson::create($request->all());
+
+        return $this->respondCreated('Lessons successfully created.');
+    
+    }
+
 
 }

@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Tag;
 
 class Lesson extends Model
 {
@@ -13,5 +14,10 @@ class Lesson extends Model
      */
     protected $table = 'lessons';
 
-    protected $fillable = ['title', 'body'];
+    protected $fillable = ['title', 'body', 'some_bool'];
+
+    public function tags()
+    {
+    	return $this->belongsToMany('App\Tag');
+    }
 }
